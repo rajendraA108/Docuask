@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
 const User = require('../models/user.model');
+const { sendWelcomeEmail } = require('../services/mail.service');
 
 // Zod validation schemas — this replaces messy if/else validation
 const registerSchema = z.object({
@@ -37,6 +38,12 @@ exports.register = async (req, res, next) => {
 
     // Generate token and respond
     const token = generateToken(user._id);
+
+    // Send welcome email (fire-and-forget)
+    sendWelcomeEmail(user.email, user.name)
+  .then(() => console.log('Welcome email sent'))
+  .catch(err => console.error('Email error:', err));
+
     res.status(201).json({
       message: 'Registration successful',
       token,
