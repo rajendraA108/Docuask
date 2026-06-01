@@ -1,0 +1,75 @@
+<div class="dashboard">
+    <header class="header">
+        <h1>DocuAsk</h1>
+        <div class="user-info">
+            <span>{{ authService.currentUser()?.name }}</span>
+            <button (click)="authService.logout()" class="btn-outline">Logout</button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Upload & Ask section -->
+        <section class="ask-section">
+            <h2>Ask a question about a PDF</h2>
+
+            <!-- File drag-and-drop zone -->
+            <div class="drop-zone" [class.has-file]="selectedFile()" (dragover)="onDragOver($event)"
+                (drop)="onDrop($event)" (click)="fileInput.click()">
+                <input #fileInput type="file" accept=".pdf" hidden (change)="onFileSelected($event)" />
+                @if (selectedFile()) {
+                <p class="file-name">{{ selectedFile()!.name }}</p>
+                <p class="file-size">{{ formatFileSize(selectedFile()!.size) }}</p>
+                } @else {
+                <p>Drop a PDF here or click to browse</p>
+                }
+            </div>
+
+            <!-- Question input -->
+            <textarea [(ngModel)]="question" placeholder="What would you like to know about this document?" rows="3"
+                class="question-input"></textarea>
+
+            <button (click)="askQuestion()" [disabled]="isLoading() || !selectedFile() || !question.trim()"
+                class="btn-primary">
+                {{ isLoading() ? 'Thinking...' : 'Ask AI' }}
+            </button>
+
+            @if (error()) {
+            <div class="error-box">{{ error() }}</div>
+            }
+
+            <!-- AI Answer -->
+            @if (lastAnswer()) {
+            <div class="answer-box">
+                <h3>Answer</h3>
+                <p>{{ lastAnswer()!.answer }}</p>
+                <small>Based on: {{ lastAnswer()!.fileName }}</small>
+            </div>
+            }
+        </section>
+
+        <!-- History section -->
+        <section class="history-section">
+            <h2>Recent questions</h2>
+
+            @if (isLoadingHistory()) {
+            <p class="loading-text">Loading history...</p>
+            } @else if (history().length === 0) {
+            <p class="empty-text">No questions yet. Ask your first one above!</p>
+            } @else {
+            <div class="history-list">
+                @for (item of history(); track item.id) {
+                <div class="history-item">
+                    <div class="history-header">
+                        <span class="file-badge">{{ item.fileName }}</span>
+                        <span class="date">{{ item.createdAt | date:'MMM d, h:mm a' }}</span>
+                        <button (click)="deleteQuery(item.id)" class="btn-icon" title="Delete">✕</button>
+                    </div>
+                    <p class="history-question">Q: {{ item.question }}</p>
+                    <p class="history-answer">A: {{ item.answer }}</p>
+                </div>
+                }
+            </div>
+            }
+        </section>
+    </main>
+</div>
