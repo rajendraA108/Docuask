@@ -17,7 +17,14 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
+app.use(cors({
+  origin: [
+    process.env.FRONTEND_URL,
+    'https://docuask-vvno.vercel.app',
+    'http://localhost:4200'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Rate limiting — protects your API from abuse
